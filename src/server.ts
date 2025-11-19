@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import authRoutes from './routes/authRoutes.ts';
 import habitRoutes from './routes/habitRoutes.ts';
 import userRoutes from './routes/userRoutes.ts';
+import tagRoutes from './routes/tagRoutes.ts';
 import { isTestEnv } from '../env.ts';
 
 const app = express();
@@ -31,5 +32,6 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes); // All auth routes prefixed with /api/auth
 app.use('/api/users', userRoutes); // All user routes prefixed with /api/users
 app.use('/api/habits', habitRoutes);
+app.use('/api/tags', tagRoutes);
 
 export default app;

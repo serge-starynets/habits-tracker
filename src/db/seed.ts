@@ -1,6 +1,6 @@
 import { db } from './connection.ts';
 import { users, habits, entries, tags, habitTags } from './schema.ts';
-//import { hashPassword } from '../utils/password.ts';
+// import { hashPassword } from '../utils/passwords.ts';
 
 async function seed() {
   console.log('🌱 Starting database seed...');
@@ -16,7 +16,7 @@ async function seed() {
 
     // Step 2: Create foundation data
     console.log('Creating demo users...');
-    //const hashedPassword = await hashPassword('demo123');
+    // const hashedPassword = await hashPassword('demo123');
 
     const [demoUser] = await db
       .insert(users)
@@ -41,6 +41,11 @@ async function seed() {
       .values({ name: 'Productivity', color: '#3B82F6' })
       .returning();
 
+    const [creativityTag] = await db
+      .insert(tags)
+      .values({ name: 'Creativity', color: '#D8D539' })
+      .returning();
+
     // Step 4: Create habits with relationships
     console.log('Creating demo habits...');
     const [exerciseHabit] = await db
@@ -54,10 +59,23 @@ async function seed() {
       })
       .returning();
 
+    const [learnHabit] = await db
+      .insert(habits)
+      .values({
+        userId: demoUser.id,
+        name: 'Learn',
+        description: 'Daily learning routine',
+        frequency: 'daily',
+        targetCount: 1,
+      })
+      .returning();
+
     // Step 5: Create many-to-many relationships
-    await db
-      .insert(habitTags)
-      .values([{ habitId: exerciseHabit.id, tagId: healthTag.id }]);
+    await db.insert(habitTags).values([
+      { habitId: exerciseHabit.id, tagId: healthTag.id },
+      { habitId: learnHabit.id, tagId: productivityTag.id },
+      { habitId: learnHabit.id, tagId: creativityTag.id },
+    ]);
 
     // Step 6: Create historical completion data
     console.log('Adding completion entries...');

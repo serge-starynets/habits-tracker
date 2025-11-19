@@ -1,39 +1,67 @@
 import { Router } from 'express';
+import {
+  createHabit,
+  getUserHabits,
+  getHabitById,
+  updateHabit,
+  deleteHabit,
+  // logHabitCompletion,
+  completeHabit,
+  // getHabitsByTag,
+  // addTagsToHabit,
+  // removeTagFromHabit,
+} from '../controllers/habitController.ts';
+import { authenticateToken } from '../middleware/auth.ts';
+import { validateBody, validateParams } from '../middleware/validation.ts';
 import { z } from 'zod';
-
-import { validateBody } from '../middleware/validation.ts';
 
 const router = Router();
 
+router.use(authenticateToken);
+
 const createHabitSchema = z.object({
   name: z.string(),
+  description: z.string().optional(),
+  frequency: z.enum(['daily', 'weekly', 'monthly'], {
+    message: 'Frequency must be daily, weekly, or monthly',
+  }),
+  targetCount: z.number().int().positive().optional().default(1),
+  tagIds: z.array(z.string().uuid()).optional(),
 });
 
-router.get('/', (req, res) => {
-  res.json({ habits: ['one', 'two'] });
+const updateHabitSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  description: z.string().optional(),
+  frequency: z.enum(['daily', 'weekly', 'monthly']).optional(),
+  targetCount: z.number().int().positive().optional(),
+  isActive: z.boolean().optional(),
+  tagIds: z.array(z.string().uuid()).optional(),
 });
 
-router.get('/:id', (req, res) => {
-  res.json({ habit: 'one' });
+const uuidSchema = z.object({
+  id: z.string().uuid('Invalid habit ID format'),
 });
 
-router.post('/', validateBody(createHabitSchema), (req, res) => {
-  const { name: newHabit } = req.body;
+router.get('/', getUserHabits);
 
-  if (!newHabit) {
-    res.json(null);
-    return;
-  }
-  res.json({ habit: newHabit });
-});
+router.get('/:id', validateParams(uuidSchema), getHabitById);
 
-router.post('/:id/complete', (req, res) => {
-  res.json({ message: 'habit completed' });
-});
+router.post('/', validateBody(createHabitSchema), createHabit);
 
-router.delete('/:id', (req, res) => {
-  const { id } = req.params;
-  res.status(204).json({ messsage: `habit with id ${id} deleted` });
-});
+router.put(
+  '/:id',
+  validateParams(uuidSchema),
+  validateBody(updateHabitSchema),
+  updateHabit
+);
+
+router.post(
+  '/:id/complete',
+  validateParams(uuidSchema),
+  validateBody(z.object({ note: z.string().optional() })),
+  completeHabit
+);
+
+router.delete('/:id', validateParams(uuidSchema), deleteHabit);
 
 export default router;
