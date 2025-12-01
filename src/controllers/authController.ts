@@ -1,11 +1,15 @@
-import type { Request, Response } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import { eq } from 'drizzle-orm';
 import { generateToken } from '../utils/jwt.ts';
 import { hashPassword, comparePassword } from '../utils/passwords.ts';
 import { db } from '../db/connection.ts';
 import { users } from '../db/schema.ts';
 
-export const register = async (req: Request, res: Response) => {
+export const register = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { email, username, password, firstName, lastName } = req.body;
 
@@ -42,12 +46,15 @@ export const register = async (req: Request, res: Response) => {
       token, // User is logged in immediately
     });
   } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({ error: 'Failed to create user' });
+    next(error);
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { email, password } = req.body;
 
@@ -81,7 +88,6 @@ export const login = async (req: Request, res: Response) => {
       token,
     });
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ error: 'Failed to login' });
+    next(error);
   }
 };

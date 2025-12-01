@@ -1,11 +1,15 @@
-import type { Response } from 'express';
+import type { NextFunction, Response } from 'express';
 import type { AuthenticatedRequest } from '../middleware/auth.ts';
 import { db } from '../db/connection.ts';
 import { users } from '../db/schema.ts';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcrypt';
 
-export const getProfile = async (req: AuthenticatedRequest, res: Response) => {
+export const getProfile = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const userId = req.user!.id;
 
@@ -28,14 +32,14 @@ export const getProfile = async (req: AuthenticatedRequest, res: Response) => {
 
     res.json({ user });
   } catch (error) {
-    console.error('Get profile error:', error);
-    res.status(500).json({ error: 'Failed to fetch profile' });
+    next(error);
   }
 };
 
 export const updateProfile = async (
   req: AuthenticatedRequest,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => {
   try {
     const userId = req.user!.id;
@@ -65,14 +69,14 @@ export const updateProfile = async (
       user: updatedUser,
     });
   } catch (error) {
-    console.error('Update profile error:', error);
-    res.status(500).json({ error: 'Failed to update profile' });
+    next(error);
   }
 };
 
 export const changePassword = async (
   req: AuthenticatedRequest,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => {
   try {
     const userId = req.user!.id;
@@ -111,7 +115,6 @@ export const changePassword = async (
       message: 'Password changed successfully',
     });
   } catch (error) {
-    console.error('Change password error:', error);
-    res.status(500).json({ error: 'Failed to change password' });
+    next(error);
   }
 };

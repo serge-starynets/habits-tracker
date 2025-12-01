@@ -8,6 +8,7 @@ import habitRoutes from './routes/habitRoutes.ts';
 import userRoutes from './routes/userRoutes.ts';
 import tagRoutes from './routes/tagRoutes.ts';
 import { isTestEnv } from '../env.ts';
+import { errorHandler, notFound } from './middleware/errorHandler.ts';
 
 const app = express();
 
@@ -33,5 +34,8 @@ app.use('/api/auth', authRoutes); // All auth routes prefixed with /api/auth
 app.use('/api/users', userRoutes); // All user routes prefixed with /api/users
 app.use('/api/habits', habitRoutes);
 app.use('/api/tags', tagRoutes);
+
+app.use(notFound);
+app.use(errorHandler);
 
 export default app;

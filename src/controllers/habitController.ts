@@ -1,10 +1,14 @@
-import type { Response } from 'express';
+import type { Response, NextFunction } from 'express';
 import type { AuthenticatedRequest } from '../middleware/auth.ts';
 import { db } from '../db/connection.ts';
 import { habits, entries, habitTags, tags } from '../db/schema.ts';
 import { eq, and, desc, inArray } from 'drizzle-orm';
 
-export const createHabit = async (req: AuthenticatedRequest, res: Response) => {
+export const createHabit = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { name, description, frequency, targetCount, tagIds } = req.body;
     const userId = req.user!.id;
@@ -36,14 +40,14 @@ export const createHabit = async (req: AuthenticatedRequest, res: Response) => {
       habit: result,
     });
   } catch (error) {
-    console.error('Create habit error:', error);
-    res.status(500).json({ error: 'Failed to create habit' });
+    next(error);
   }
 };
 
 export const completeHabit = async (
   req: AuthenticatedRequest,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => {
   try {
     const { id } = req.params;
@@ -72,14 +76,14 @@ export const completeHabit = async (
       habit: result,
     });
   } catch (error) {
-    console.error('Complete habit error:', error);
-    res.status(500).json({ error: 'Failed to complete habit' });
+    next(error);
   }
 };
 
 export const getUserHabits = async (
   req: AuthenticatedRequest,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => {
   try {
     const userId = req.user!.id;
@@ -108,14 +112,14 @@ export const getUserHabits = async (
       habits: habitsWithTags,
     });
   } catch (error) {
-    console.error('Get habits error:', error);
-    res.status(500).json({ error: 'Failed to fetch habits' });
+    next(error);
   }
 };
 
 export const getHabitById = async (
   req: AuthenticatedRequest,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => {
   try {
     const { id } = req.params;
@@ -151,12 +155,15 @@ export const getHabitById = async (
       habit: habitWithTags,
     });
   } catch (error) {
-    console.error('Get habit error:', error);
-    res.status(500).json({ error: 'Failed to fetch habit' });
+    next(error);
   }
 };
 
-export const updateHabit = async (req: AuthenticatedRequest, res: Response) => {
+export const updateHabit = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { id } = req.params;
     const userId = req.user!.id;
@@ -198,14 +205,18 @@ export const updateHabit = async (req: AuthenticatedRequest, res: Response) => {
     });
   } catch (error: any) {
     if (error.message === 'Habit not found') {
-      return res.status(404).json({ error: 'Habit not found' });
+      next(error);
     }
     console.error('Update habit error:', error);
     res.status(500).json({ error: 'Failed to update habit' });
   }
 };
 
-export const deleteHabit = async (req: AuthenticatedRequest, res: Response) => {
+export const deleteHabit = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { id } = req.params;
     const userId = req.user!.id;
@@ -223,7 +234,6 @@ export const deleteHabit = async (req: AuthenticatedRequest, res: Response) => {
       message: 'Habit deleted successfully',
     });
   } catch (error) {
-    console.error('Delete habit error:', error);
-    res.status(500).json({ error: 'Failed to delete habit' });
+    next(error);
   }
 };

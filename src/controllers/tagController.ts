@@ -1,10 +1,14 @@
-import type { Request, Response } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import type { AuthenticatedRequest } from '../middleware/auth.ts';
 import { db } from '../db/connection.ts';
 import { tags, habitTags } from '../db/schema.ts';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, ne } from 'drizzle-orm';
 
-export const createTag = async (req: AuthenticatedRequest, res: Response) => {
+export const createTag = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { name, color } = req.body;
 
@@ -32,12 +36,15 @@ export const createTag = async (req: AuthenticatedRequest, res: Response) => {
       tag: newTag,
     });
   } catch (error) {
-    console.error('Create tag error:', error);
-    res.status(500).json({ error: 'Failed to create tag' });
+    next(error);
   }
 };
 
-export const getTags = async (req: Request, res: Response) => {
+export const getTags = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const allTags = await db.select().from(tags).orderBy(tags.name);
 
@@ -45,12 +52,15 @@ export const getTags = async (req: Request, res: Response) => {
       tags: allTags,
     });
   } catch (error) {
-    console.error('Get tags error:', error);
-    res.status(500).json({ error: 'Failed to fetch tags' });
+    next(error);
   }
 };
 
-export const getTagById = async (req: Request, res: Response) => {
+export const getTagById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { id } = req.params;
 
@@ -87,12 +97,15 @@ export const getTagById = async (req: Request, res: Response) => {
       tag: tagWithHabits,
     });
   } catch (error) {
-    console.error('Get tag error:', error);
-    res.status(500).json({ error: 'Failed to fetch tag' });
+    next(error);
   }
 };
 
-export const updateTag = async (req: AuthenticatedRequest, res: Response) => {
+export const updateTag = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { id } = req.params;
     const { name, color } = req.body;
@@ -129,12 +142,15 @@ export const updateTag = async (req: AuthenticatedRequest, res: Response) => {
       tag: updatedTag,
     });
   } catch (error) {
-    console.error('Update tag error:', error);
-    res.status(500).json({ error: 'Failed to update tag' });
+    next(error);
   }
 };
 
-export const deleteTag = async (req: AuthenticatedRequest, res: Response) => {
+export const deleteTag = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { id } = req.params;
 
@@ -151,12 +167,15 @@ export const deleteTag = async (req: AuthenticatedRequest, res: Response) => {
       message: 'Tag deleted successfully',
     });
   } catch (error) {
-    console.error('Delete tag error:', error);
-    res.status(500).json({ error: 'Failed to delete tag' });
+    next(error);
   }
 };
 
-export const getPopularTags = async (req: Request, res: Response) => {
+export const getPopularTags = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     // Get all tags with their usage count
     const tagsWithCount = await db.query.tags.findMany({
@@ -182,12 +201,15 @@ export const getPopularTags = async (req: Request, res: Response) => {
       tags: popularTags,
     });
   } catch (error) {
-    console.error('Get popular tags error:', error);
-    res.status(500).json({ error: 'Failed to fetch popular tags' });
+    next(error);
   }
 };
 
-export const getTagHabits = async (req: Request, res: Response) => {
+export const getTagHabits = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { id } = req.params;
     const tag = await db.query.tags.findFirst({
@@ -211,7 +233,6 @@ export const getTagHabits = async (req: Request, res: Response) => {
       habits,
     });
   } catch (error) {
-    console.error('Get tag habits error:', error);
-    res.status(500).json({ error: 'Failed to fetch tag habits' });
+    next(error);
   }
 };
