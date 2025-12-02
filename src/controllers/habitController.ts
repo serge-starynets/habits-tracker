@@ -71,9 +71,9 @@ export const completeHabit = async (
 
       return habit;
     });
-    res.json({
+    res.status(201).json({
       message: 'Habit completed',
-      habit: result,
+      entry: result,
     });
   } catch (error) {
     next(error);
@@ -178,7 +178,7 @@ export const updateHabit = async (
         .returning();
 
       if (!updatedHabit) {
-        throw new Error('Habit not found');
+        res.status(404).json({ error: 'Habit not found' });
       }
 
       // If tagIds are provided, update the associations
