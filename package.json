@@ -4,6 +4,9 @@
   "description": "Habit Tracker API",
   "main": "src/index.ts",
   "type": "module",
+  "engines": {
+    "node": ">= 24.1.0"
+  },
   "scripts": {
     "dev": "node --watch src/index.ts",
     "start": "node src/index.ts",
